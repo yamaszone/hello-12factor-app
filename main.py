@@ -11,4 +11,4 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"Hello": os.getenv("WORLD")}
+    return {"Hola": os.getenv("WORLD")}
