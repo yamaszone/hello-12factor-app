@@ -1,10 +1,10 @@
 apiVersion: skaffold/v2beta15
 kind: Config
 metadata:
-  name: fastapi-app
+  name: hello-12fa
 build:
   artifacts:
-  - image: fastapi-app
+  - image: hello-12fa
     docker:
       dockerfile: Dockerfile
 deploy:

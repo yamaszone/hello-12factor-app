@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/hello")
 def say_hello(name: str = "anonymous"):
-    return { "Hello" : name + "!" }
+    return { "greetings" : "Hello, " + name + "!" }
 
 @app.get("/healthz")
 def healthz():

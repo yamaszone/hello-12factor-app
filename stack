@@ -18,17 +18,21 @@ usage() {
 	printf "  \t\tSyntax: build [<tag>]\n"
 	printf "  \t\tExample: build 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
 	printf "\n"
+	printf "  dev\t\tDeploy in development mode. Choices: odo, skaffold, tilt\n"
+	printf "  \t\tSyntax: dev <tool>]\n"
+	printf "  \t\tExample: dev tilt\n"
+	printf "\n"
 	printf "  expose\tExpose the service. Port defaults to ${PORT_EXPOSE}.\n"
 	printf "  \t\tSyntax: expose [<port>]\n"
 	printf "  \t\tExample: expose\n"
 	printf "\n"
-	printf "  push\t\tPush containers to registry. Tag defaults to 'latest'\n"
-	printf "  \t\tSyntax: push [<tag>]\n"
-	printf "  \t\tExample: push 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
-	printf "\n"
 	printf "  logs\t\tSee logs.\n"
 	printf "  \t\tSyntax: logs\n"
 	printf "  \t\tExample: logs\n"
+	printf "\n"
+	printf "  push\t\tPush containers to registry. Tag defaults to 'latest'\n"
+	printf "  \t\tSyntax: push [<tag>]\n"
+	printf "  \t\tExample: push 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
 	printf "\n"
 	printf "  up | down\tDeploy or destroy the stack. Tag defaults to 'latest'.\n"
 	printf "  \t\tSyntax: up [<tag>]\n"
@@ -73,6 +77,22 @@ deploy_or_destroy_stack() {
 	fi
 }
 
+develop() {
+	local tool="$1"
+
+	validate_empty_input "$tool" "Error: tool (e.g. odo, skaffold, tilt) can't be empty."
+	if [[ "$tool" == "odo" ]]; then
+		odo dev
+	elif [[ "$tool" == "skaffold" ]]; then
+		skaffold debug
+	elif [[ "$tool" == "tilt" ]]; then
+		tilt up
+	else
+		printf "Error: invalid tool. Valid choices are: odo, skaffold, tilt\n"
+		exit 1
+	fi
+}
+
 expose_service(){
 	local port="${1-:${CONTAINER_PORT}}"
 
@@ -86,6 +106,9 @@ print_logs() {
 case "$1" in
 	build)
 		build_stack "${@:2}"
+		;;
+	dev)
+		develop "${@:2}"
 		;;
 	expose)
 		expose_service "${@:2}"
