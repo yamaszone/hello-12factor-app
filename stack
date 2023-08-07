@@ -1,0 +1,105 @@
+#!/bin/bash
+
+#set -ex
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+DEPLOYMENT_DIR=${SCRIPT_DIR}/deployments
+IMAGE="hello-12fa"
+
+DEPLOYMENT_NAME="hello-12fa"
+PORT_EXPOSE=8000
+
+usage() {
+	printf "Usage:\n"
+	printf "  help\t\tShow this help\n"
+	printf "\n"
+	printf "  build\t\tBuild the stack. Tag defaults to 'latest'.\n"
+	printf "  \t\tSyntax: build [<tag>]\n"
+	printf "  \t\tExample: build 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
+	printf "\n"
+	printf "  expose\tExpose the service. Port defaults to ${PORT_EXPOSE}.\n"
+	printf "  \t\tSyntax: expose [<port>]\n"
+	printf "  \t\tExample: expose\n"
+	printf "\n"
+	printf "  push\t\tPush containers to registry. Tag defaults to 'latest'\n"
+	printf "  \t\tSyntax: push [<tag>]\n"
+	printf "  \t\tExample: push 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
+	printf "\n"
+	printf "  logs\t\tSee logs.\n"
+	printf "  \t\tSyntax: logs\n"
+	printf "  \t\tExample: logs\n"
+	printf "\n"
+	printf "  up | down\tDeploy or destroy the stack. Tag defaults to 'latest'.\n"
+	printf "  \t\tSyntax: up [<tag>]\n"
+	printf "  \t\tExample: up 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
+	printf "\n"
+}
+
+validate_empty_input() {
+	local user_input="$1"
+	local err_msg="$2"
+
+	[[ -z "$user_input" ]] && printf "$err_msg\n" && exit 1
+}
+
+validate_target_env() {
+	local target_env="$1"
+	validate_empty_input "$target_env" "Error: target environment (allowed values: local, remote) can't be empty."
+}
+
+build_stack() {
+	local tag=${1:-latest}
+
+	docker build --platform=linux/amd64 -t ${IMAGE}:${tag} -f Dockerfile .
+}
+
+push_images() {
+	local tag=${1:-latest}
+
+	docker push ${IMAGE}:${tag}
+}
+
+deploy_or_destroy_stack() {
+	local action="$1"
+
+	validate_empty_input "$action" "Error: action (e.g. up, down) can't be empty."
+
+	if [[ "$action" == "up" ]]; then
+		kubectl apply -f ${DEPLOYMENT_DIR}/
+		kubectl get pods
+	elif [[ "$action" == "down" ]]; then
+		kubectl delete -f ${DEPLOYMENT_DIR}/
+	fi
+}
+
+expose_service(){
+	local port="${1-:${CONTAINER_PORT}}"
+
+	kubectl port-forward deployments/${DEPLOYMENT_NAME} ${port}:${PORT_EXPOSE}
+}
+
+print_logs() {
+	kubectl logs -f deployment/${DEPLOYMENT_NAME}
+}
+
+case "$1" in
+	build)
+		build_stack "${@:2}"
+		;;
+	expose)
+		expose_service "${@:2}"
+		;;
+	push)
+		push_images "${@:2}"
+		;;
+	logs)
+		print_logs
+		;;
+	up | down)
+		deploy_or_destroy_stack "${@:1}"
+		;;
+	* | -h | help)
+		usage
+		;;
+esac

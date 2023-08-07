@@ -2,20 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fastapi-app
+  name: hello-12fa
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fastapi-app
+      app: hello-12fa
   template:
     metadata:
       labels:
-        app: fastapi-app
+        app: hello-12fa
     spec:
       containers:
-      - name: fastapi-app
-        image: fastapi-app
+      - name: hello-12fa
+        # NOTE: don't use 'latest' on production
+        image: hello-12fa:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
@@ -23,10 +24,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: fastapi-app
+  name: hello-12fa
 spec:
   selector:
-    app: fastapi-app
+    app: hello-12fa
   ports:
     - protocol: TCP
       port: 80
