@@ -1,4 +1,4 @@
-# [12-Factor App Demo](https://12factor.net/)
+# [12-Factor App](https://12factor.net/) Demo
 
 ## Prerequisites
 - [Docker Engine](https://docs.docker.com/engine/install/)
