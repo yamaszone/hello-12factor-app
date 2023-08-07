@@ -1,14 +1,15 @@
 from fastapi import FastAPI
-import logging
-import os
-import sys
+from logger import configure_logger
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-logger = logging.getLogger()
+logger = configure_logger()
 
 logger.info('Initializing FastAPI...')
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hola": os.getenv("WORLD")}
+@app.get("/hello")
+def say_hello(name: str = "anonymous"):
+    return { "Hello" : name + "!" }
+
+@app.get("/healthz")
+def healthz():
+    return { "status": { "code" : 200, "message": "OK" } }
