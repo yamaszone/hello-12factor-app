@@ -19,7 +19,7 @@
 - Test
   - Request
     ```
-    curl -s http://0.0.0.0:8000/hello?name=foo
+    curl -s "localhost:8000/hello?name=foo"
     ```
   - Response
     ```
