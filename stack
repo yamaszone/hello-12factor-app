@@ -2,7 +2,13 @@
 
 #set -ex
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+script_path="${BASH_SOURCE[0]}"
+script_dir="${script_path%/*}"
+if [[ "$script_path" == "$script_dir" ]]; then
+	script_dir="."
+fi
+
+SCRIPT_DIR="$(cd "$script_dir" >/dev/null 2>&1 && pwd)"
 
 DEPLOYMENT_DIR=${SCRIPT_DIR}/deployments
 IMAGE="hello-12fa"
@@ -18,9 +24,9 @@ usage() {
 	printf "  \t\tSyntax: build [<tag>]\n"
 	printf "  \t\tExample: build 32bfc671ab6e11a528c4a28f99a105f0386ddd58\n"
 	printf "\n"
-	printf "  dev\t\tDeploy in development mode. Choices: odo, skaffold, tilt\n"
-	printf "  \t\tSyntax: dev <tool>]\n"
-	printf "  \t\tExample: dev tilt\n"
+	printf "  dev\t\tDeploy in development mode with hot-reloading, via skaffold.\n"
+	printf "  \t\tSyntax: dev\n"
+	printf "  \t\tExample: dev\n"
 	printf "\n"
 	printf "  expose\tExpose the service. Port defaults to ${PORT_EXPOSE}.\n"
 	printf "  \t\tSyntax: expose [<port>]\n"
@@ -78,19 +84,11 @@ deploy_or_destroy_stack() {
 }
 
 develop() {
-	local tool="$1"
-
-	validate_empty_input "$tool" "Error: tool (e.g. odo, skaffold, tilt) can't be empty."
-	if [[ "$tool" == "odo" ]]; then
-		odo dev
-	elif [[ "$tool" == "skaffold" ]]; then
-		skaffold debug
-	elif [[ "$tool" == "tilt" ]]; then
-		tilt up
-	else
-		printf "Error: invalid tool. Valid choices are: odo, skaffold, tilt\n"
-		exit 1
-	fi
+	# 'debug' disables auto-build/sync/deploy by default so a debug session
+	# isn't torn down. Re-enable sync only: source edits are copied into the
+	# live container (hot reload), while dependency changes still need a
+	# manual rebuild ('r' at the skaffold prompt).
+	skaffold debug --auto-sync=true
 }
 
 expose_service(){
@@ -108,7 +106,7 @@ case "$1" in
 		build_stack "${@:2}"
 		;;
 	dev)
-		develop "${@:2}"
+		develop
 		;;
 	expose)
 		expose_service "${@:2}"

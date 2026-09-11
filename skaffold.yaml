@@ -1,13 +1,20 @@
-apiVersion: skaffold/v2beta15
+apiVersion: skaffold/v4beta14
 kind: Config
 metadata:
   name: hello-12fa
 build:
   artifacts:
-  - image: hello-12fa
-    docker:
-      dockerfile: Dockerfile
-deploy:
-  kubectl:
-    manifests:
+    - image: hello-12fa
+      # Copy source straight into the running container instead of rebuilding
+      # the image, so uvicorn's --reload can pick the change up.
+      sync:
+        manual:
+          - src: '*.py'
+            dest: /app
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
     - deployments/*
+deploy:
+  kubectl: {}
