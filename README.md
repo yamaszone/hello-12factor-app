@@ -7,15 +7,16 @@
   - [Docker Desktop Kubernetes](https://docs.docker.com/desktop/kubernetes/)
   - [kind Kubernetes](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
   - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-- K8s-based development using one of the following:
-  - [`odo` CLI](https://odo.dev/docs/overview/installation)
+- K8s-based development:
   - [`skaffold` CLI](https://skaffold.dev/docs/install/)
-  - [`tilt` CLI](https://docs.tilt.dev/install.html)
 
 ## Develop
 - Startup local Kubernetes cluster following docs in the [**Prerequisites**]((#prerequisites))
-- `./stack dev <tool>` # Launch app with hot-reloading. `tool` can be `odo`, `skaffold`, or `tilt`
-  - See help: `odo -h` or `skaffold -h` or `tilt -h`
+- `./stack dev` # Launch app with hot-reloading, via `skaffold debug --auto-sync=true`
+  - See help: `skaffold -h`
+  - Editing a `.py` file syncs it into the running container, where `uvicorn --reload` restarts the app
+  - Changing `requirements.txt` needs a rebuild: press `r` at the skaffold prompt
+- Expose the service: `./stack expose`
 - Test
   - Request
     ```
